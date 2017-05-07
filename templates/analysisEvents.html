@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+	<body>
+		<h1> analysis stage.</h1>
+		<table style="border:1px;">
+			<tr>
+				<th>이벤트명</th>
+				<th>시간</th>
+				<th>장소</th>
+				<th>분석 결과</th>
+			</tr>
+			{% for row in analysisList %}
+			<tr>
+				<td style="text-align:center;">{{row.summary}}</td>
+				<td style="text-align:center;">{{row.start_dt}} - </br>
+				{{row.end_dt}}</td>
+				<td style="text-align:center;">{{row.location}}</td>
+				<td style="text-align:center;">{{row.analysis}}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	</body>
+</html>

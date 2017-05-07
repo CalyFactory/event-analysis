@@ -1,0 +1,5 @@
+anaenv/
+*.json
+__pycache__
+anaenv
+
