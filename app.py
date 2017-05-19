@@ -22,4 +22,4 @@ def analysisEvent():
 	return render_template('analysisEvents.html', analysisList=analysisList)
 
 if __name__ == '__main__':
-	app.run('0.0.0.0',7070);
+	app.run('0.0.0.0',8585);

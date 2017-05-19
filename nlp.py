@@ -1,9 +1,21 @@
 # -*- coding: utf-8 -*-
-
 import konlpy
 import nltk
+import sys
+
+from konlpy.tag import Mecab
 
 from manager import db_manager
+
+if len(sys.argv) < 2 :
+	print("arguments length is 0. input string wanted analyzed.")
+	sys.exit()
+
+if len(sys.argv) > 2 :
+	print("arguments length is over 2. input one string wanted analyzed.")
+	sys.exit()
+
+mecab = Mecab()
 
 def analysis(sentence):
 	# POS tag a sentence
@@ -80,3 +92,22 @@ def listFromAccountByCalendarHashkey(account):
 # db_manager.query("select * from EVENT where calendar_hashkey ='caa746b0643e719a0a60080365520f4c946c49b0efbdb6ecd49ec99a'")
 
 #analysis("헬로우 안녕 여러분들")
+def PrinftKindsOfInput(inputMessage):
+	print("----------------------")
+	print("input : "+inputMessage)
+	print()
+	print()
+	print("===== 형태소 ==========")
+	print(mecab.morphs(inputMessage))
+	print()
+
+	print("===== 명사 ==========")
+	print(mecab.nouns(inputMessage))
+	print()
+
+	print("===== 품사별 ==========")
+	print("")
+	print(mecab.pos(inputMessage))
+	print()
+
+PrinftKindsOfInput(str(sys.argv[1]))
