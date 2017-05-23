@@ -1,37 +1,44 @@
 # -*- coding: utf-8 -*-
+#import konlpy
+#import nltk
+import sys
 
-import konlpy
-import nltk
+#from konlpy.tag import Mecab
+import MeCab
+import string
 
 from manager import db_manager
+"""
+if len(sys.argv) < 2 :
+	print("arguments length is 0. input string wanted analyzed.")
+	sys.exit()
 
+if len(sys.argv) > 2 :
+	print("arguments length is over 2. input one string wanted analyzed.")
+	sys.exit()
+"""
 def analysis(sentence):
-	# POS tag a sentence
-	# sentence = u'만 6세 이하의 초등학교 취학 전 자녀를 양육하기 위해서는'
-	result=[]
-	words = konlpy.tag.Twitter().pos(sentence)
+	result='';
+	try:
+	    #print(MeCab.VERSION)
 
-	# Define a chunk grammar, or chunking rules, then chunk
-	grammar = """
-	NP: {<N.*>*<Suffix>?}   # Noun phrase
-	VP: {<V.*>*}            # Verb phrase
-	AP: {<A.*>*}            # Adjective phrase
-	"""
-	parser = nltk.RegexpParser(grammar)
-	chunks = parser.parse(words)
-	"""
-	print("# Print whole tree")
-	print(chunks.pprint())
-	print('')
-	print("# pure print")
-	print(chunks)
-	print('')
-	print("\n# Print noun phrases only")
-	"""
-	for subtree in chunks.subtrees():
-		if subtree.label()=='NP':
-			result.append(', '.join((e[0] for e in list(subtree))))
-			#print(subtree.pprint())
+		t = MeCab.Tagger ('-d /usr/local/lib/mecab/dic/mecab-ko-dic')
+		#print(t.parse(sentence))
+		t.parse(sentence)
+
+		m = t.parseToNode(sentence)
+		while m:
+			if (m.feature.find("지하철") > 0) or (m.feature.find("동이름") > 0) or (m.feature.find("대학교") > 0):
+				#print(m.surface, "\t", m.feature)
+				if result is not '':
+					result = result + ', '
+				result=result+m.surface
+			m = m.next
+		
+
+	except RuntimeError as e:
+	    print("RuntimeError:", e)
+
 	return result
 
 
@@ -76,7 +83,5 @@ def listFromAccountByCalendarHashkey(account):
 			'analysis':analysis(row.summary)
 		})
 	return result
-#def listOfAnalysis()
-# db_manager.query("select * from EVENT where calendar_hashkey ='caa746b0643e719a0a60080365520f4c946c49b0efbdb6ecd49ec99a'")
 
-#analysis("헬로우 안녕 여러분들")
+

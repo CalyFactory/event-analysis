@@ -1,5 +1,8 @@
 anaenv/
+mecab_files/
+lib/
 *.json
 __pycache__
 anaenv
-
+*.csv
+*.log

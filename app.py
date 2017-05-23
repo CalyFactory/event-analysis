@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request;
-import nlp
+import recommendLocation
 import json 
 
 with open('./key/test.json') as test_json:
@@ -17,9 +17,9 @@ def index():
 def analysisEvent():
 	#analysisList=nlp.listFromAccount(request.form['account']) # origin
 	#analysisList=nlp.listFromAccount(test['calendar-hashkey']['1'])
-	analysisList=nlp.listFromAccountByCalendarHashkey(test['calendar-hashkey']['1'])
+	analysisList=recommendLocation.listFromAccountByCalendarHashkey(test['calendar-hashkey']['1'])
 	#print(request.form)
 	return render_template('analysisEvents.html', analysisList=analysisList)
 
 if __name__ == '__main__':
-	app.run('0.0.0.0',7070);
+	app.run('0.0.0.0',8585);

@@ -1,7 +1,11 @@
 Analysis Event Module (NLP)
 ===
 
-***install flow***
+***Need to next progress***
+
+[MeCab binding to python3.x](https://bitbucket.org/eunjeon/mecab-python-0.996)
+
+***Install flow***
 
 ```
 virtualenv anaenv
@@ -15,3 +19,4 @@ start command
 ```
 python3 app.py
 ```
+
