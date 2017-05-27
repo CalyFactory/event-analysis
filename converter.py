@@ -27,7 +27,8 @@ with open(pathString, newline='') as csvfile:
 	spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
 	for row in spamreader:
 		split = ' '.join(row).split(',,,,NNP,지명')
-		convertedPart = split[1].replace(split[0],str(sys.argv[2]))
+		split2 = split[1].split(',*,*,*,')
+		convertedPart = split2[0].replace(split[0],str(sys.argv[2]))+',*,*,*,'+split2[1]
 		converted = split[0]+',,,,NNP,지명'+convertedPart
 		
 		with open(writePath, 'a', newline='') as file:

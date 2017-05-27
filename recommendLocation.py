@@ -28,11 +28,22 @@ def analysis(sentence):
 
 		m = t.parseToNode(sentence)
 		while m:
-			if (m.feature.find("지하철") > 0) or (m.feature.find("동이름") > 0) or (m.feature.find("대학교") > 0):
+			if result is not '':
+				result = result + ', '
+
+
+			if (m.feature.find("지하철") > 0) and (m.surface.find("역") < 0 or m.surface == '동역사'):
+				partsOfFeature = m.feature.split(',')
+				print(partsOfFeature)
+				
+				for part in partsOfFeature:
+					if part.find('역') > 0:
+						result=result+part
+						break
+			elif (m.feature.find("지하철") > 0) or (m.feature.find("동이름") > 0) or (m.feature.find("대학교") > 0):
 				#print(m.surface, "\t", m.feature)
-				if result is not '':
-					result = result + ', '
 				result=result+m.surface
+
 			m = m.next
 		
 
@@ -54,6 +65,7 @@ def listFromAccount(account):
 		"UA.login_platform = '"+loginPlatform+"' "
 		"and UA.user_id = '"+userId+"'"
 	"order by E.start_dt ASC")
+
 	for row in rows:
 		result.append({
 			'summary':row.summary,
