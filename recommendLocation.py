@@ -31,21 +31,30 @@ def analysis(sentence):
 			if result is not '':
 				result = result + ', '
 
-
-			if (m.feature.find("지하철") > 0) and (m.surface.find("역") < 0 or m.surface == '동역사'):
+			if (m.feature.find("대학교") > 0):
+				if m.surface.find("대학교") > 0:
+					result=result+m.surface
+				else:
+					partsOfFeature = m.feature.split(',')
+					print(partsOfFeature)
+					for part in partsOfFeature:
+						if part.find('대학교') > 0:
+							result=result+part
+							break	
+			elif (m.feature.find("지하철") > 0) and (m.surface.find("역") < 0 or m.surface == '동역사'):
 				partsOfFeature = m.feature.split(',')
 				print(partsOfFeature)
-				
 				for part in partsOfFeature:
 					if part.find('역') > 0:
 						result=result+part
 						break
-			elif (m.feature.find("지하철") > 0) or (m.feature.find("동이름") > 0) or (m.feature.find("대학교") > 0):
+			elif (m.feature.find("지하철") > 0) or (m.feature.find("동이름") > 0):
 				#print(m.surface, "\t", m.feature)
 				result=result+m.surface
+			else:
+				print('else : '+m.feature)
 
 			m = m.next
-		
 
 	except RuntimeError as e:
 	    print("RuntimeError:", e)
