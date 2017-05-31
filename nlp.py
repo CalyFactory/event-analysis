@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-#import konlpy
-#import nltk
+#coding: utf-8
 import sys
 
-#from konlpy.tag import Mecab
 import MeCab
 import string
 
@@ -19,28 +17,19 @@ if len(sys.argv) > 2 :
 
 def extractTime(sentence):
 	try:
-
 		t = MeCab.Tagger ('-d /usr/local/lib/mecab/dic/mecab-ko-dic')
-		m = t.parseToNode(sentence)
+		print("origin : "+sentence)
+		print("utf-8 : ")
+		print(sentence.encode('utf-8'))
+		print("utf-8(2) : " + str(sentence.encode('utf-8').decode('utf-8')))
+		print(type(u'하 하 성민이랑 평강이랑 11시 바다 고고싱'))
+		#m = t.parseToNode(str(sentence.encode('utf-8').decode('utf-8')))
+		m = t.parseToNode(u'하 하 성민이랑 평강이랑 11시 바다 고고싱')
+
 		while m:
 			print(m.surface, "\t", m.feature)
 			m = m.next
 
-		print("EOS")
-		print()
-		lattice = MeCab.Lattice()
-		t.parse(lattice)
-		lattice.set_sentence(sentence)
-		len = lattice.size()
-		for i in range(len + 1):
-			b = lattice.begin_nodes(i)
-			e = lattice.end_nodes(i)
-			while b:
-				print("B[%d] %s\t%s" % (i, b.surface, b.feature))
-				b = b.bnext 
-			while e:
-				print("E[%d] %s\t%s" % (i, e.surface, e.feature))
-				e = e.bnext 
 		print("EOS")
 		print()
 		d = t.dictionary_info()
@@ -53,7 +42,7 @@ def extractTime(sentence):
 			print("rsize: %d" %  d.rsize)
 			print("version: %d" %  d.version)
 			d = d.next
-			
+
 	except RuntimeError as e:
 		print("RuntimeError:", e)	
 
@@ -113,5 +102,4 @@ def extractLocation(sentence):
 print("Import Mecab success with "+str(sys.argv[1]))
 
 
-sentence = str(sys.argv[1])
-extractTime(sentence)
+extractTime('')
