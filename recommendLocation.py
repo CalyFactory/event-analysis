@@ -18,7 +18,14 @@ if len(sys.argv) > 2 :
 	sys.exit()
 """
 def analysis(sentence):
-	result='';
+	result=''
+	timeZone={
+		'아침':'7시',
+		'브런치':'11시',
+		'점심':'13시',
+		'저녁':'19시',
+		'밤':'22시'
+	}
 	try:
 	    #print(MeCab.VERSION)
 
@@ -31,25 +38,15 @@ def analysis(sentence):
 			if result is not '':
 				result = result + ', '
 
-			### Grep time-zone
-			"""
-			if m.surface.isdigit():
-				tmpList = m.feature.split(',')
-				isSN=False
-				for item in tmpList:
-					if item.find('SN') is not -1:
-						isSN=True
-				if isSN is True:
-					time=m.surface
-			if m.feature.find("시") 
-			"""
+			### Grep time-zone : ical / line_plus@naver.com
 			if m.feature.find('SN') > -1 and m.surface.isdigit():
 				time=m.surface
 			elif m.feature.find('NNBC') > -1 and m.feature.find('시') > -1 and time is not -1:
-				# assign time data
-				pass
-			##
-			# Grep location
+				time=time+'시'
+			elif (m.surface.find('아침') > -1) or (m.surface.find('브런치') > -1) or (m.surface.find('점심') > -1) or (m.surface.find('저녁') > -1) or (m.surface.find('밤') > -1):
+				time=timeZone[m.surface]
+
+			# Grep location : google / calyfactorytester3@gmail.com
 			elif (m.feature.find("대학교") > -1):
 				if m.surface.find("대학교") > -1:
 					result=result+m.surface
@@ -57,7 +54,7 @@ def analysis(sentence):
 					partsOfFeature = m.feature.split(',')
 					print(partsOfFeature)
 					for part in partsOfFeature:
-						if part.find('대학교') > -1:
+						if part.find('대학교') > 0:
 							result=result+part
 							break	
 			elif (m.feature.find("지하철") > -1) and (m.surface.find("역") < 0 or m.surface == '동역사'):
@@ -76,9 +73,12 @@ def analysis(sentence):
 			m = m.next
 
 	except RuntimeError as e:
-	    print("RuntimeError:", e)
+		print("RuntimeError:", e)
 
-	return result
+	if time is -1:
+		time=None
+
+	return [result,time]
 
 
 def listFromAccount(account):
@@ -95,12 +95,19 @@ def listFromAccount(account):
 	"order by E.start_dt ASC")
 
 	for row in rows:
+		argLocation = row.summary
+		if row.location is not None:
+			argLocation = argLocation+' '+row.location
+
+		rowAnalysis, rowTime = analysis(argLocation)
+
 		result.append({
 			'summary':row.summary,
 			'start_dt':row.start_dt,
 			'end_dt':row.end_dt,
 			'location':row.location,
-			'analysis':analysis(row.summary)
+			'analysis':rowAnalysis,
+			'time':rowTime
 		})
 	return result
 
