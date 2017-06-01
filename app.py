@@ -15,9 +15,10 @@ def index():
 
 @app.route('/analysis', methods = ['POST'])
 def analysisEvent():
-	#analysisList=nlp.listFromAccount(request.form['account']) # origin
+	print('account : '+request.form['account'])
+	analysisList=recommendLocation.listFromAccount(request.form['account']) # origin
 	#analysisList=nlp.listFromAccount(test['calendar-hashkey']['1'])
-	analysisList=recommendLocation.listFromAccountByCalendarHashkey(test['calendar-hashkey']['1'])
+	#analysisList=recommendLocation.listFromAccountByCalendarHashkey(test['calendar-hashkey']['1'])
 	#print(request.form)
 	return render_template('analysisEvents.html', analysisList=analysisList)
 
