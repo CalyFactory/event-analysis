@@ -9,6 +9,7 @@
 				<th>장소</th>
 				<th>예상 장소</th>
 				<th>예상 시간</th>
+				<th>예상 목적</th>
 			</tr>
 			{% for row in analysisList %}
 			<tr>
@@ -18,6 +19,7 @@
 				<td style="text-align:center;">{{row.location}}</td>
 				<td style="text-align:center;">{{row.analysis}}</td>
 				<td style="text-align:center;">{{row.time}}</td>
+				<td style="text-align:center;">{{row.purpose}}</td>
 			</tr>
 			{% endfor %}
 		</table>

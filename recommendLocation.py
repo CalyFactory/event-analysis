@@ -19,12 +19,29 @@ if len(sys.argv) > 2 :
 """
 def analysis(sentence):
 	result=''
+	purposeResult=''
 	timeZone={
 		'아침':'7시',
 		'브런치':'11시',
 		'점심':'13시',
 		'저녁':'19시',
 		'밤':'22시'
+	}
+	purposeIndex = {
+		'CPI01':0,
+		'CPI02':0,
+		'CPI03':0,
+		'CPI04':0,
+		'CPI05':0,
+		'CPI06':0
+	}
+	printPurpose = {
+		'CPI01':'지인과의 약속',
+		'CPI02':'데이트 일정',
+		'CPI03':'각종 기념일',
+		'CPI04':'모임 뒷풀이',
+		'CPI05':'회의 및 스터디',
+		'CPI06':'문화생활'	
 	}
 	try:
 	    #print(MeCab.VERSION)
@@ -46,7 +63,15 @@ def analysis(sentence):
 			elif (m.surface.find('아침') > -1) or (m.surface.find('브런치') > -1) or (m.surface.find('점심') > -1) or (m.surface.find('저녁') > -1) or (m.surface.find('밤') > -1):
 				time=timeZone[m.surface]
 
-			# Grep location : google / calyfactorytester3@gmail.com
+			### Grep purpose
+			elif m.feature.find('CPI') > -1:
+				partsOfFeature = m.feature.split(',')
+				for part in partsOfFeature:
+					if part.find('CPI') > -1:
+						purposeIndex[part]=purposeIndex[part]+1
+						purposeResult=purposeResult+' '+printPurpose[part]
+
+			### Grep location : google / calyfactorytester3@gmail.com
 			elif (m.feature.find("대학교") > -1):
 				if m.surface.find("대학교") > -1:
 					result=result+m.surface
@@ -78,7 +103,7 @@ def analysis(sentence):
 	if time is -1:
 		time=None
 
-	return [result,time]
+	return [result,time,purposeResult]
 
 
 def listFromAccount(account):
@@ -99,7 +124,7 @@ def listFromAccount(account):
 		if row.location is not None:
 			argLocation = argLocation+' '+row.location
 
-		rowAnalysis, rowTime = analysis(argLocation)
+		rowAnalysis, rowTime, rowPurpose = analysis(argLocation)
 
 		result.append({
 			'summary':row.summary,
@@ -107,7 +132,8 @@ def listFromAccount(account):
 			'end_dt':row.end_dt,
 			'location':row.location,
 			'analysis':rowAnalysis,
-			'time':rowTime
+			'time':rowTime,
+			'purpose':rowPurpose
 		})
 	return result
 
