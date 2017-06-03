@@ -3,7 +3,6 @@
 #import nltk
 import sys
 
-#from konlpy.tag import Mecab
 import MeCab
 import string
 
@@ -17,9 +16,20 @@ if len(sys.argv) > 2 :
 	print("arguments length is over 2. input one string wanted analyzed.")
 	sys.exit()
 """
-def analysis(sentence):
+def analysis(sentence,startDt, endDt):
 	result=''
 	purposeResult=''
+	locationCount=0
+	locationsJson={}
+	splitedStartDt=str(startDt).split(' ')
+	splitedEndDt=str(endDt).split(' ')
+	timeZoneJson={
+		'event_start':'',
+		'event_end':'',
+		'calendar_start':splitedStartDt[1][:5],
+		'calendar_end':splitedEndDt[1][:5]
+	}
+	eventTypesJson={}
 	timeZone={
 		'아침':'7시',
 		'브런치':'11시',
@@ -49,7 +59,8 @@ def analysis(sentence):
 		t = MeCab.Tagger ('-d /usr/local/lib/mecab/dic/mecab-ko-dic')
 		#print(t.parse(sentence))
 		t.parse(sentence)
-		time = -1;
+		time = -1
+		CPICount=0
 		m = t.parseToNode(sentence)
 		while m:
 			if result is not '':
@@ -65,10 +76,17 @@ def analysis(sentence):
 
 			### Grep purpose
 			elif m.feature.find('CPI') > -1:
+				if CPICount > 1:
+					continue
+
 				partsOfFeature = m.feature.split(',')
 				for part in partsOfFeature:
 					if part.find('CPI') > -1:
+						if purposeIndex[part] > 0:
+							continue
 						purposeIndex[part]=purposeIndex[part]+1
+						eventTypesJson[CPICount]={"id":part}
+						CPICount=CPICount+1
 						purposeResult=purposeResult+' '+printPurpose[part]
 
 			### Grep location : google / calyfactorytester3@gmail.com
@@ -77,20 +95,25 @@ def analysis(sentence):
 					result=result+m.surface
 				else:
 					partsOfFeature = m.feature.split(',')
-					print(partsOfFeature)
+					#print(partsOfFeature)
 					for part in partsOfFeature:
 						if part.find('대학교') > 0:
 							result=result+part
 							break	
 			elif (m.feature.find("지하철") > -1) and (m.surface.find("역") < 0 or m.surface == '동역사'):
 				partsOfFeature = m.feature.split(',')
-				print(partsOfFeature)
+				#print(partsOfFeature)
 				for part in partsOfFeature:
 					if part.find('역') > -1:
+						locationsJson[locationCount]={'no':locationCount,'region':part}
+						locationCount = locationCount + 1
 						result=result+part
 						break
-			elif (m.feature.find("지하철") > -1) or (m.feature.find("동이름") > 0):
+			elif m.feature.find("지하철") > -1:
+				locationsJson[locationCount]={'no':locationCount,'region':m.surface}
 				#print(m.surface, "\t", m.feature)
+
+			elif m.feature.find("동이름") > 0:
 				result=result+m.surface
 			else:
 				print('else : '+m.surface+'/ '+m.feature)
@@ -100,12 +123,44 @@ def analysis(sentence):
 	except RuntimeError as e:
 		print("RuntimeError:", e)
 
+
 	if time is -1:
-		time=None
+		timeZoneJson['event_start']='None'
+		timeZoneJson['event_end']='None'
+	if CPICount is 0:
+		eventTypesJson="None"
+	if locationCount is 0:
+		locationsJson="None"
+	jsonTest = {
+		'locations': locationsJson,
+		'time_zone': timeZoneJson, 
+		'event_types':eventTypesJson
+	}
+	return jsonTest
+	#return [result,time,purposeResult]
 
-	return [result,time,purposeResult]
+def testAnalysis(eventHashKey):
+	rows = db_manager.query("select "
+		"E.summary,E.start_dt,E.end_dt,E.location "
+	"from EVENT as E "
+	"where"
+		" E.event_hashkey = '"+eventHashKey+"'"
+	)
 
+	for row in rows:
+		argSummary = row.summary
+		if row.location is not None:
+			argSummary = argSummary+' '+row.location
 
+		print(analysis(argSummary, row.start_dt, row.end_dt))
+
+# Exist Purpose & location
+#testAnalysis('2f6983b9e204b0e64ef4dbea5ebf23a74878598385dd9d9de596f8b9')
+# None location
+#testAnalysis('2be7df2a187f07cb2ab92e1726e3bf2615e691f6652985a76bdcdac3')
+# None Purpose
+testAnalysis('0de9844e9eedb2037df09b9a84b9ded6b610272973aa1bf11679c653')
+"""
 def listFromAccount(account):
 	loginPlatform, userId = account.split('/')
 	result=[]
@@ -156,5 +211,5 @@ def listFromAccountByCalendarHashkey(account):
 			'analysis':analysis(row.summary)
 		})
 	return result
-
+"""
 
