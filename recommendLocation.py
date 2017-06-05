@@ -26,8 +26,8 @@ def analysis(sentence,startDt, endDt):
 	timeZoneJson={
 		'event_start':'',
 		'event_end':'',
-		'calendar_start':splitedStartDt[1][:5],
-		'calendar_end':splitedEndDt[1][:5]
+		'event_start':splitedStartDt[1][:5],
+		'event_end':splitedEndDt[1][:5]
 	}
 	eventTypesJson={}
 	timeZone={
@@ -70,7 +70,13 @@ def analysis(sentence,startDt, endDt):
 			if m.feature.find('SN') > -1 and m.surface.isdigit():
 				time=m.surface
 			elif m.feature.find('NNBC') > -1 and m.feature.find('시') > -1 and time is not -1:
-				time=time+'시'
+				endTime = int(time)+1
+				if int(time) < 10:
+					time = '0'+str(time)
+				if int(endTime) < 10:
+					endTime = '0'+str(endTime)
+				timeZoneJson['extract_start']=str(time)+':00'
+				timeZoneJson['extract_end']=str(endTime)+':00'
 			elif (m.surface.find('아침') > -1) or (m.surface.find('브런치') > -1) or (m.surface.find('점심') > -1) or (m.surface.find('저녁') > -1) or (m.surface.find('밤') > -1):
 				time=timeZone[m.surface]
 
@@ -93,12 +99,14 @@ def analysis(sentence,startDt, endDt):
 			elif (m.feature.find("대학교") > -1):
 				if m.surface.find("대학교") > -1:
 					result=result+m.surface
+					print("Catch : "+m.surface)
 				else:
 					partsOfFeature = m.feature.split(',')
 					#print(partsOfFeature)
 					for part in partsOfFeature:
 						if part.find('대학교') > 0:
 							result=result+part
+							print("Catch : "+part)
 							break	
 			elif (m.feature.find("지하철") > -1) and (m.surface.find("역") < 0 or m.surface == '동역사'):
 				partsOfFeature = m.feature.split(',')
@@ -111,12 +119,14 @@ def analysis(sentence,startDt, endDt):
 						break
 			elif m.feature.find("지하철") > -1:
 				locationsJson[locationCount]={'no':locationCount,'region':m.surface}
+				locationCount = locationCount + 1
 				#print(m.surface, "\t", m.feature)
 
 			elif m.feature.find("동이름") > 0:
 				result=result+m.surface
 			else:
-				print('else : '+m.surface+'/ '+m.feature)
+				#print('else : '+m.surface+'/ '+m.feature)
+				pass
 
 			m = m.next
 
@@ -125,15 +135,15 @@ def analysis(sentence,startDt, endDt):
 
 
 	if time is -1:
-		timeZoneJson['event_start']='None'
-		timeZoneJson['event_end']='None'
+		timeZoneJson['extract_start']='None'
+		timeZoneJson['extract_end']='None'
 	if CPICount is 0:
 		eventTypesJson="None"
 	if locationCount is 0:
 		locationsJson="None"
 	jsonTest = {
 		'locations': locationsJson,
-		'time_zone': timeZoneJson, 
+		'time_set': timeZoneJson, 
 		'event_types':eventTypesJson
 	}
 	return jsonTest
@@ -159,57 +169,14 @@ def testAnalysis(eventHashKey):
 # None location
 #testAnalysis('2be7df2a187f07cb2ab92e1726e3bf2615e691f6652985a76bdcdac3')
 # None Purpose
-testAnalysis('0de9844e9eedb2037df09b9a84b9ded6b610272973aa1bf11679c653')
-"""
-def listFromAccount(account):
-	loginPlatform, userId = account.split('/')
-	result=[]
-	rows = db_manager.query("select "
-		"E.summary,E.start_dt,E.end_dt,E.location "
-	"from EVENT as E "
-	"inner join CALENDAR as C on E.calendar_hashkey = C.calendar_hashkey "
-	"inner join USERACCOUNT as UA on C.account_hashkey = UA.account_hashkey "
-	"where "
-		"UA.login_platform = '"+loginPlatform+"' "
-		"and UA.user_id = '"+userId+"'"
-	"order by E.start_dt ASC")
+#testAnalysis('0de9844e9eedb2037df09b9a84b9ded6b610272973aa1bf11679c653')
 
-	for row in rows:
-		argLocation = row.summary
-		if row.location is not None:
-			argLocation = argLocation+' '+row.location
-
-		rowAnalysis, rowTime, rowPurpose = analysis(argLocation)
-
-		result.append({
-			'summary':row.summary,
-			'start_dt':row.start_dt,
-			'end_dt':row.end_dt,
-			'location':row.location,
-			'analysis':rowAnalysis,
-			'time':rowTime,
-			'purpose':rowPurpose
-		})
-	return result
-
-def listFromAccountByCalendarHashkey(account):
-	result=[]
-	rows = db_manager.query("select "
-		"E.summary,E.start_dt,E.end_dt,E.location "
-	"from EVENT as E "
-	"inner join CALENDAR as C on E.calendar_hashkey = C.calendar_hashkey "
-	"inner join USERACCOUNT as UA on C.account_hashkey = UA.account_hashkey "
-	"where "
-		"C.calendar_hashkey = '"+account+"'"
-	"order by E.start_dt ASC")
-	for row in rows:
-		result.append({
-			'summary':row.summary,
-			'start_dt':row.start_dt,
-			'end_dt':row.end_dt,
-			'location':row.location,
-			'analysis':analysis(row.summary)
-		})
-	return result
-"""
+# Testcase 1 : all
+#testAnalysis('3275008b3da8adf4874f6e09cc127c75cf46711b3031cdebd1db9a29')
+# Testcase 2 : without purpose
+#testAnalysis('907d71d0b0809116217205674096ec15929c1dbe5afa9057d98cd439')
+# Testcase 3 : without extractTime
+testAnalysis('af0b3b5e551180310106982d9c94786507e397236cf93f345011850f')
+# Testcase 4 : without location
+#testAnalysis('217f53d8b6511daaf659f2911872a72b8be22c39c27714e3e2859f0e')
 
