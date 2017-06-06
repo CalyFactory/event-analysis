@@ -7,6 +7,7 @@ import MeCab
 import string
 
 from manager import db_manager
+
 """
 if len(sys.argv) < 2 :
 	print("arguments length is 0. input string wanted analyzed.")
