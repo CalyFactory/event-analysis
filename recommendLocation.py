@@ -7,7 +7,7 @@ import MeCab
 import string
 
 from manager import db_manager
-
+import regionCollecter
 """
 if len(sys.argv) < 2 :
 	print("arguments length is 0. input string wanted analyzed.")
@@ -18,6 +18,7 @@ if len(sys.argv) > 2 :
 	sys.exit()
 """
 def analysis(sentence,startDt, endDt):
+	regionCollectDict, univCollectDict = regionCollecter.loadSubwayDict()
 	result=''
 	purposeResult=''
 	locationCount=0
@@ -100,7 +101,15 @@ def analysis(sentence,startDt, endDt):
 			elif (m.feature.find("대학교") > -1):
 				if m.surface.find("대학교") > -1:
 					result=result+m.surface
-					print("Catch : "+m.surface)
+					if m.surface in univCollectDict:
+						# 첫번째 역으로 가정
+						locationsJson[locationCount]={'no':locationCount,'region':regionCollectDict[univCollectDict[m.surface]][0]}
+						locationCount = locationCount + 1
+					else:
+						print("Can't supported university.")
+						pass #Cannot
+
+						
 				else:
 					partsOfFeature = m.feature.split(',')
 					#print(partsOfFeature)
@@ -108,10 +117,15 @@ def analysis(sentence,startDt, endDt):
 						if part.find('대학교') > 0:
 							result=result+part
 							print("Catch : "+part)
+							if part in univCollectDict:
+								locationsJson[locationCount]={'no':locationCount,'region':regionCollectDict[univCollectDict[part]][0]}
+								locationCount = locationCount + 1
+							else:
+								print("Can't supported university.")
+								pass #Cannot
 							break	
 			elif (m.feature.find("지하철") > -1) and (m.surface.find("역") < 0 or m.surface == '동역사'):
 				partsOfFeature = m.feature.split(',')
-				#print(partsOfFeature)
 				for part in partsOfFeature:
 					if part.find('역') > -1:
 						locationsJson[locationCount]={'no':locationCount,'region':part}
@@ -121,10 +135,15 @@ def analysis(sentence,startDt, endDt):
 			elif m.feature.find("지하철") > -1:
 				locationsJson[locationCount]={'no':locationCount,'region':m.surface}
 				locationCount = locationCount + 1
-				#print(m.surface, "\t", m.feature)
 
 			elif m.feature.find("동이름") > 0:
 				result=result+m.surface
+				if m.surface in regionCollectDict:
+					locationsJson[locationCount]={'no':locationCount,'region':regionCollectDict[m.surface][0]}
+					locationCount = locationCount + 1
+				else:
+					print("Can't supported sub-region.")
+					pass #Cannot
 			else:
 				#print('else : '+m.surface+'/ '+m.feature)
 				pass
@@ -164,3 +183,13 @@ def testAnalysis(eventHashKey):
 			argSummary = argSummary+' '+row.location
 
 		return analysis(argSummary, row.start_dt, row.end_dt)
+
+# Testcase 1 : all
+#print(testAnalysis('3275008b3da8adf4874f6e09cc127c75cf46711b3031cdebd1db9a29'))
+# Testcase 2 : without purpose
+#print(testAnalysis('907d71d0b0809116217205674096ec15929c1dbe5afa9057d98cd439'))
+#print(testAnalysis('6ab9e0c0fe6290d08c80b2f0e16c7fc93a0decc82a85ba599201c7f9'))
+# Testcase 3 : without extractTime
+#print(testAnalysis('af0b3b5e551180310106982d9c94786507e397236cf93f345011850f'))
+# Testcase 4 : without location
+#print(testAnalysis('217f53d8b6511daaf659f2911872a72b8be22c39c27714e3e2859f0e'))
